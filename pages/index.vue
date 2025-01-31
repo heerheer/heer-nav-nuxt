@@ -20,11 +20,7 @@
 
     <div class="w-full flex justify-center items-start flex-col">
       <div v-if="existSites" v-for="category in siteStore.categoryies" :key="category" class="w-full mb-2">
-        <div class="text-base font-bold mb-2">
-          {{ category }}
-          <!-- 编辑模式下可以通过分类快速编辑多个网站 -->
-          <UButton v-if="edit" icon="ri-edit-2-line" class="px-1" variant="ghost" />
-        </div>
+        <CategoryBlock :category="category" />
         <div class="grid grid-flow-row grid-cols-1 gap-4 auto-cols-auto sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           <SiteBlock v-for="site in siteStore.getSiteByCategory(category)" :site="site" @edit-site="editSite"
             @delete-site="deleteSite" />
