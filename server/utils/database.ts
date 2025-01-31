@@ -7,7 +7,7 @@ import { Site } from '~/shared.types';
 
 console.log(process.env.MONGODB_URI!)
 
-mongoose.connect(process.env.MONGODB_URI!,{dbName:'heer-nav-test'}).then(() => {
+mongoose.connect(process.env.MONGODB_URI!, { dbName: 'heer-nav-test' }).then(() => {
   console.log('Connected to MongoDB')
 })
 
@@ -22,12 +22,11 @@ const siteSchema = new Schema<Site>({
   category: { type: String, required: true },
   tags: { type: [String], required: true },
   encrypted: {
-    url: { type: String },
+    url: { type: String, required: true },
     tip: { type: String }
   }
 });
 
 const SiteModel = mongoose.model('Site', siteSchema);
 
-export {SiteModel}
-   
+export { SiteModel }

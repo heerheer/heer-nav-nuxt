@@ -94,10 +94,13 @@
       <UTabs :items="tabs">
         <template #item="{ item }">
           <div v-if="item.key === 'ess'" class="flex flex-col gap-2">
-            <UFormGroup label="网站名称" error>
+            <UFormGroup
+              label="网站名称"
+             
+            >
               <UInput placeholder="请输入网站名称" v-model="current.name" />
             </UFormGroup>
-            <UFormGroup label="网站地址" error>
+            <UFormGroup label="网站地址" description="若选择了 高级>加密 则地址失效" >
               <UInput
                 placeholder="https://www.example.com"
                 v-model="current.url"
@@ -131,7 +134,7 @@
             <UFormGroup
               label="站点标签"
               error
-              description="选择一个已有分类或者创建新的"
+              description="选择一个已有标签或者创建新的"
             >
               <div class="flex gap-2 items-center">
                 <UBadge
@@ -165,22 +168,37 @@
               </div>
             </UFormGroup>
           </div>
-          <div v-else-if="item.key === 'advance'" class="flex flex-col gap-2">
+          <div v-else-if="item.key === 'advance'">
             <UFormGroup
-              label="加密模块(可选)"
+              label="加密模块"
               error
               description="使得网站需要密码才可以解密后跳转(加密前信息不会上传云端)"
+              class="flex flex-col gap-2"
+              hint="可选,使得基础信息网站内容失效"
             >
               <UButton
                 v-if="!current.encrypted"
                 @click="current.encrypted = { url: '' }"
+                icon="ri-door-lock-box-line"
                 >启用加密</UButton
               >
-              <UFormGroup v-else label="目标地址">
-                <UInput
-                  placeholder="https://example.com/encrypt"
-                  v-model="current.encrypted.url"
-              /></UFormGroup>
+              <div v-else class="flex flex-col gap-2">
+                <UFormGroup label="目标地址">
+                  <UInput
+                    placeholder="https://example.com/encrypt"
+                    v-model="currentEncrypt.url"
+                /></UFormGroup>
+                <UFormGroup label="约定密钥">
+                  <UInput
+                    placeholder="this_is_the_aes_key"
+                    v-model="currentEncrypt.key"
+                /></UFormGroup>
+                <UFormGroup label="提示信息" hint="可选">
+                  <UInput
+                    placeholder="加密后显示的提示信息"
+                    v-model="current.encrypted.tip"
+                /></UFormGroup>
+              </div>
             </UFormGroup>
           </div>
         </template>
@@ -223,6 +241,8 @@ const { edit } = storeToRefs(store);
 // modal相关
 const isOpen = ref(false);
 const current = ref({} as Site);
+
+const currentEncrypt = ref({} as { url: string; key: string });
 
 const tabs = [
   {
@@ -306,12 +326,16 @@ const addNewSite = async () => {
     encrypted: undefined,
   };
 
+  // 重置加密区
+  currentEncrypt.value = { url: "", key: "" };
+
   current.value = site;
   isOpen.value = true;
 };
 
 const editSite = async (site: Site) => {
-  //clone site
+  // 重置加密区
+  currentEncrypt.value = { url: "", key: "" };
 
   current.value = JSON.parse(JSON.stringify(site));
   isOpen.value = true;
@@ -328,7 +352,34 @@ const deleteSite = async (site: Site) => {
   });
 };
 
+import crypto from "crypto-js";
+
 const completeEdit = async () => {
+  if (
+    !current.value.name ||
+    !current.value.url ||
+    !current.value.desc ||
+    !current.value.category ||
+    !current.value.tags
+  ) {
+    alert("请填写所有必填项！");
+    return;
+  }
+
+  if (
+    current.value.encrypted != undefined &&
+    currentEncrypt.value.url &&
+    currentEncrypt.value.key
+  ) {
+    // 代表需要进行加密结果运算
+    current.value.encrypted = {
+      url: crypto.AES.encrypt(
+        current.value.url,
+        currentEncrypt.value.key
+      ).toString(),
+    };
+  }
+
   let resp = await $fetch("/api/sites", {
     method: "PUT",
     headers: {
@@ -338,10 +389,11 @@ const completeEdit = async () => {
     body: JSON.stringify(current.value),
   });
 
-  if (resp.code == 200) {
+  if (Number(resp.code) == 200 ) {
     await refreshData();
+    alert("修改成功");
   } else {
-    alert("似乎修改失败了?");
+    alert("似乎修改失败了?" + resp.message);
   }
 };
 
