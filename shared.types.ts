@@ -9,17 +9,18 @@ export type SearchEngine = {
 };
 
 export type Site = {
+  _id?: string;
   name: string;
   url: string;
   avatar?: {
-    url: string
+    url: string;
   };
-  desc:string;
-  type: 'common';
+  desc: string;
+  type: "common" | "repo";
   category: string;
   tags: string[];
   encrypted?: {
     url: string;
-    tip?: string
-  }
-}
+    tip?: string;
+  };
+};

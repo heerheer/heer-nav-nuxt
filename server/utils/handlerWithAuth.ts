@@ -19,6 +19,6 @@ export const defineHandlerWithAuth = <T extends EventHandlerRequest, D>(
       return response;
     } catch (err) {
       // Error handling
-      return { err };
+      return { message: "Error", code: 500, data: err };
     }
   });

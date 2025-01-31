@@ -166,14 +166,24 @@ const editSite = async (site: Site) => {
 };
 
 const deleteSite = async (site: Site) => {
+  if (!confirm("确定要删除吗？")) {
+    return;
+  }
   let resp = await $fetch("/api/sites", {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
       Authorization: store.token,
     },
-    body: JSON.stringify(site),
+    body: JSON.stringify({ _id: site._id }),
   });
+  if (resp.code == 200) {
+    alert("删除成功");
+    await siteStore.refresh();
+  } else {
+    alert("删除失败：" + resp.message);
+  }
+
 };
 
 import crypto from "crypto-js";

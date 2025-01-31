@@ -20,7 +20,7 @@ const siteSchema = new Schema<Site>({
     url: { type: String },
   },
   desc: { type: String, required: true },
-  type: { type: String, enum: ["common"], default: "common" }, // 默认为 'common' 类型
+  type: { type: String, enum: ["common", "repo"], default: "common" }, // 默认为 'common' 类型
   category: { type: String, required: true },
   tags: { type: [String], required: true },
   encrypted: {

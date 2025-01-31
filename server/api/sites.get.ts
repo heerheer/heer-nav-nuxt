@@ -1,7 +1,8 @@
 import { Site } from "~/shared.types";
 
 export default defineEventHandler(async (event) => {
-  const sites = await SiteModel.find({}, { _id: 0 });
+  //const sites = await SiteModel.find({}, { _id: 0 });
+  const sites = await SiteModel.find({}, {});
 
   // //group sites by category and return {'':[]}
   // const categoryMap = new Map<string, Site[]>()

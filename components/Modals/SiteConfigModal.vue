@@ -22,7 +22,7 @@
                         </UFormGroup>
                         <UFormGroup label="站点分类" error description="选择一个已有分类或者创建新的">
                             <div class="flex gap-2 items-center">
-                                <UInputMenu size="xs" v-model="current.category" :options="getCategories" />
+                                <UInputMenu size="xs" v-model="current.category" :options="siteStore.categoryies" />
                                 <InputButton icon="ri-add-line" placeholder="例如...二次元" @complete="addCategory">
                                 </InputButton>
                             </div>

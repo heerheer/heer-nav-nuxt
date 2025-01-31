@@ -1,22 +1,7 @@
-export default defineEventHandler<{
-  body: {
-    name: string
-  }
-}>(async (event) => {
-  let token = event.headers.get('Authorization')
+export default defineHandlerWithAuth(async (event) => {
+  const { _id } = (await readBody(event)) as { _id: string };
 
-  if (token != process.env.API_TOKEN) {
-    //return 401
-    setResponseStatus(event, 401)
-    return {
-      message: 'Unauthorized',
-      code: 401,
-      data: {}
-    }
-  }
+  const resp = await SiteModel.deleteOne({ _id });
 
-  const { name } = await readBody(event)
-
-
-
-})
+  return { message: "OK", code: 200, data: resp };
+});
