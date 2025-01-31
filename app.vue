@@ -2,16 +2,15 @@
   <div class="bg-[#f5f5f5] dark:bg-black h-screen w-screen">
     <NuxtPage></NuxtPage>
 
+    <UNotifications />
   </div>
 </template>
 
 <style>
-
 body {
 
-  font-family: 'Righteous',"ZCOOL Kuai Le", system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'Righteous', "ZCOOL Kuai Le", system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
-
 </style>
 
 <script setup lang="ts">

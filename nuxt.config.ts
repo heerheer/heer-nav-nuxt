@@ -1,6 +1,7 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
+
   modules: ["@nuxt/ui", ['@pinia/nuxt', {
     autoImports: [
       // 自动引入 `defineStore()`
@@ -9,10 +10,14 @@ export default defineNuxtConfig({
       ['defineStore', 'definePiniaStore'],
     ],
   },]],
+
   css: [
     "remixicon/fonts/remixicon.css",
     '~/assets/css/global.css'
   ],
+
   serverHandlers: [
-  ]
+  ],
+
+  compatibilityDate: '2025-01-31',
 })

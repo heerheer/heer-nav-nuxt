@@ -2,19 +2,8 @@
   <div class="p-4 flex flex-col gap-4">
     <!-- LOGO -->
     <div class="w-full flex justify-center items-center gap-1">
-      <img
-        @click="refreshData()"
-        class="h-12"
-        src="https://nav.heerdev.top/assets/logo-c014dd94.png"
-        alt=""
-      />
-      <UButton
-        v-if="edit"
-        icon="ri-edit-2-line"
-        class="px-1"
-        variant="ghost"
-        title="编辑logo地址"
-      />
+      <img class="h-12" src="https://nav.heerdev.top/assets/logo-c014dd94.png" alt="" />
+      <UButton v-if="edit" icon="ri-edit-2-line" class="px-1" variant="ghost" title="编辑logo地址" />
     </div>
 
     <!-- SEARCH -->
@@ -23,51 +12,26 @@
         <SearchBar :engines="search_engines" />
         <ColorModeButton />
         <!-- 编辑模式下增加按钮 -->
-        <UButton
-          v-if="edit"
-          icon="ri-sticky-note-add-line"
-          variant="ghost"
-          @click="addNewSite()"
-          title="添加站点"
-        />
+        <UButton v-if="edit" icon="ri-sticky-note-add-line" variant="ghost" @click="addNewSite()" title="添加站点" />
       </div>
     </div>
 
     <!-- SITES -->
 
     <div class="w-full flex justify-center items-start flex-col">
-      <div
-        v-if="existSites"
-        v-for="category in Object.keys(sitesMap)"
-        :key="category"
-        class="w-full mb-2"
-      >
+      <div v-if="existSites" v-for="category in siteStore.categoryies" :key="category" class="w-full mb-2">
         <div class="text-base font-bold mb-2">
           {{ category }}
           <!-- 编辑模式下可以通过分类快速编辑多个网站 -->
-          <UButton
-            v-if="edit"
-            icon="ri-edit-2-line"
-            class="px-1"
-            variant="ghost"
-          />
+          <UButton v-if="edit" icon="ri-edit-2-line" class="px-1" variant="ghost" />
         </div>
-        <div
-          class="grid grid-flow-row grid-cols-1 gap-4 auto-cols-auto sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
-        >
-          <SiteBlock
-            v-for="site in sitesMap[category]"
-            :site="site"
-            @edit-site="editSite"
-            @delete-site="deleteSite"
-          />
+        <div class="grid grid-flow-row grid-cols-1 gap-4 auto-cols-auto sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          <SiteBlock v-for="site in siteStore.getSiteByCategory(category)" :site="site" @edit-site="editSite"
+            @delete-site="deleteSite" />
         </div>
       </div>
 
-      <div
-        class="w-full justify-center items-center flex h-fit py-12 flex-col gap-4"
-        v-if="!existSites"
-      >
+      <div class="w-full justify-center items-center flex h-fit py-12 flex-col gap-4" v-if="!existSites">
         <img :src="empyt_svg" alt="SVG Image" width="30%" />
         <div class="text-center text-gray-500 text-2xl">
           这儿似乎没有东西...
@@ -76,142 +40,10 @@
     </div>
   </div>
 
-  <UModal v-model="isOpen" prevent-close>
-    <div class="p-4 flex flex-col gap-2">
-      <div class="flex justify-between">
-        <div>编辑站点信息</div>
-        <UButton
-          color="gray"
-          variant="ghost"
-          icon="i-heroicons-x-mark-20-solid"
-          class="-my-1"
-          @click="isOpen = false"
-          title="取消"
-        />
-      </div>
-      <UDivider />
+  <SiteConfigModal v-model="isOpen" :current="current" @completeEdit="completeEdit">
 
-      <UTabs :items="tabs">
-        <template #item="{ item }">
-          <div v-if="item.key === 'ess'" class="flex flex-col gap-2">
-            <UFormGroup
-              label="网站名称"
-             
-            >
-              <UInput placeholder="请输入网站名称" v-model="current.name" />
-            </UFormGroup>
-            <UFormGroup label="网站地址" description="若选择了 高级>加密 则地址失效" >
-              <UInput
-                placeholder="https://www.example.com"
-                v-model="current.url"
-              />
-            </UFormGroup>
-            <UFormGroup label="站点描述" error>
-              <UTextarea
-                placeholder="一个神奇的网站..."
-                v-model="current.desc"
-              />
-            </UFormGroup>
-            <UFormGroup
-              label="站点分类"
-              error
-              description="选择一个已有分类或者创建新的"
-            >
-              <div class="flex gap-2 items-center">
-                <UInputMenu
-                  size="xs"
-                  v-model="current.category"
-                  :options="Object.keys(sitesMap)"
-                />
-                <InputButton
-                  icon="ri-add-line"
-                  placeholder="例如...二次元"
-                  @complete="addCategory"
-                ></InputButton>
-              </div>
-            </UFormGroup>
+  </SiteConfigModal>
 
-            <UFormGroup
-              label="站点标签"
-              error
-              description="选择一个已有标签或者创建新的"
-            >
-              <div class="flex gap-2 items-center">
-                <UBadge
-                  size="xs"
-                  variant="subtle"
-                  v-for="tag in current.tags"
-                  :key="tag"
-                  :label="tag"
-                  class="pr-0"
-                >
-                  {{ tag }}
-                  <UButton
-                    size="xs"
-                    variant="ghost"
-                    icon="ri-close-line"
-                    class="p-1"
-                    @click="current.tags.splice(current.tags.indexOf(tag), 1)"
-                    :title="`删除标签:${tag}`"
-                  ></UButton>
-                </UBadge>
-
-                <InputButton
-                  icon="ri-add-line"
-                  placeholder="Example"
-                  @complete="
-                    (text) => {
-                      if (!current.tags.includes(text)) current.tags.push(text);
-                    }
-                  "
-                ></InputButton>
-              </div>
-            </UFormGroup>
-          </div>
-          <div v-else-if="item.key === 'advance'">
-            <UFormGroup
-              label="加密模块"
-              error
-              description="使得网站需要密码才可以解密后跳转(加密前信息不会上传云端)"
-              class="flex flex-col gap-2"
-              hint="可选,使得基础信息网站内容失效"
-            >
-              <UButton
-                v-if="!current.encrypted"
-                @click="current.encrypted = { url: '' }"
-                icon="ri-door-lock-box-line"
-                >启用加密</UButton
-              >
-              <div v-else class="flex flex-col gap-2">
-                <UFormGroup label="目标地址">
-                  <UInput
-                    placeholder="https://example.com/encrypt"
-                    v-model="currentEncrypt.url"
-                /></UFormGroup>
-                <UFormGroup label="约定密钥">
-                  <UInput
-                    placeholder="this_is_the_aes_key"
-                    v-model="currentEncrypt.key"
-                /></UFormGroup>
-                <UFormGroup label="提示信息" hint="可选">
-                  <UInput
-                    placeholder="加密后显示的提示信息"
-                    v-model="current.encrypted.tip"
-                /></UFormGroup>
-              </div>
-            </UFormGroup>
-          </div>
-        </template>
-      </UTabs>
-
-      <UDivider />
-
-      <!-- footer -->
-      <div class="flex justify-end">
-        <UButton icon="ri-check-line" @click="completeEdit">修改完成</UButton>
-      </div>
-    </div>
-  </UModal>
 </template>
 
 <script setup lang="ts">
@@ -234,7 +66,9 @@ import empyt_svg from "assets/illustrations/undraw_empty_re_opql.svg";
 // });
 
 const store = useModeStore();
-const sitesMap = ref({} as { [key: string]: Site[] });
+const siteStore = useSiteStore();
+
+const toast = useToast()
 
 const { edit } = storeToRefs(store);
 
@@ -244,16 +78,11 @@ const current = ref({} as Site);
 
 const currentEncrypt = ref({} as { url: string; key: string });
 
-const tabs = [
-  {
-    key: "ess",
-    label: "基础信息",
-  },
-  {
-    key: "advance",
-    label: "高级设置",
-  },
-];
+onMounted(() => {
+  // 初始化site
+  siteStore.refresh();
+});
+
 
 const search_engines: SearchEngine[] = [
   {
@@ -261,8 +90,8 @@ const search_engines: SearchEngine[] = [
     label: "站内搜索",
     on_search: async (text) => {
       // 使用/edit [token]来进入编辑模式
-      if (text.startsWith("/edit")) {
-        let token = text.split("/edit")[1].trim();
+      if (text.startsWith("edit:")) {
+        let token = text.split("edit:")[1].trim();
         let auth = await $fetch(`/api/auth`, {
           params: {
             token,
@@ -271,7 +100,12 @@ const search_engines: SearchEngine[] = [
 
         if (auth.code == 200) {
           store.setEditMode(true, token);
-          console.log("进入编辑模式");
+          toast.add({
+            title: "编辑模式已开启",
+            description: "您可以在编辑模式下进行编辑",
+            color: "green",
+          });
+
         }
       }
     },
@@ -301,18 +135,8 @@ const search_engines: SearchEngine[] = [
   },
 ];
 
-const refreshData = async () => {
-  const data = await $fetch("/api/sites");
-  sitesMap.value = data;
-};
-
-onMounted(async () => {
-  await refreshData();
-  console.log(Object.keys(sitesMap));
-});
-
 const existSites = computed(() => {
-  return Object.keys(sitesMap.value).length > 0;
+  return Object.keys(siteStore.sites).length > 0;
 });
 
 const addNewSite = async () => {
@@ -353,6 +177,8 @@ const deleteSite = async (site: Site) => {
 };
 
 import crypto from "crypto-js";
+import SiteConfigModal from "~/components/Modals/SiteConfigModal.vue";
+import sitesDelete from "~/server/api/sites.delete";
 
 const completeEdit = async () => {
   if (
@@ -388,29 +214,25 @@ const completeEdit = async () => {
     },
     body: JSON.stringify(current.value),
   });
-
-  if (Number(resp.code) == 200 ) {
-    await refreshData();
+  console.log(JSON.stringify(resp));
+  if (resp.code == 200) {
     alert("修改成功");
+    await siteStore.refresh();
+    isOpen.value = false;
   } else {
-    alert("似乎修改失败了?" + resp.message);
+    alert("修改失败：" + resp.message);
   }
 };
 
-const addCategory = async (category: string) => {
-  if (!sitesMap.value.hasOwnProperty(category)) {
-    sitesMap.value[category] = [];
-  }
-  current.value.category = category;
-};
+
 </script>
 
 <style>
-.hide-on-hover-and-focus:focus + div #search-icon {
+.hide-on-hover-and-focus:focus+div #search-icon {
   display: none;
 }
 
-.hide-on-hover-and-focus:focus + div #enter-search {
+.hide-on-hover-and-focus:focus+div #enter-search {
   display: block;
 }
 
